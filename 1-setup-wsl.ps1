@@ -30,6 +30,7 @@ function Enable-WindowsFeature {
     }
 }
 
+#not used in this script
 function Download-File {
     param (
         [string]$Uri,
@@ -102,8 +103,8 @@ $windowsSshPath = "$($env:USERPROFILE)\.ssh"
 
 #region functions not used
 # #Enable WSL pre-requisities
-# Enable-WindowsFeature -FeatureName Microsoft-Windows-Subsystem-Linux
-# Enable-WindowsFeature -FeatureName VirtualMachinePlatform
+Enable-WindowsFeature -FeatureName Microsoft-Windows-Subsystem-Linux
+Enable-WindowsFeature -FeatureName VirtualMachinePlatform
 
 
 # #Configure wsl network options
@@ -129,21 +130,27 @@ $windowsSshPath = "$($env:USERPROFILE)\.ssh"
 
 
 
-Write-Output "Setting up WSL distribution: $WslDistribution"
-Install-WSL -DistroName $WslDistribution
+try {
+    # Write-Output "1/6 Setting up WSL distribution: $WslDistribution"
+    # Install-WSL -DistroName $WslDistribution
 
-Write-Output "Create $WslUsername and add it to sudoers"
-wsl -d $WslDistribution -u root bash -ic "./infra/scripts/1-create-user.sh '$WslUsername'"
-wsl --shutdown
+    # Write-Output "2/6 Create $WslUsername and add it to sudoers"
+    # wsl -d $WslDistribution -u root bash -ic "./infra/scripts/1-create-user.sh '$WslUsername'"
+    # wsl --shutdown
 
-Write-Output "Update the system"
-wsl -d $WslDistribution -u $WslUsername bash -c "./infra/scripts/2-install-ansible.sh"
+    Write-Output "3/6 Update the system"
+    wsl -d $WslDistribution -u $WslUsername bash -c "./infra/scripts/2-install-ansible.sh"
 
-Write-Output "Install Ansible"
-wsl -d $WslDistribution -u $WslUsername bash -ic "./infra/scripts/3-install-ansible-solution.sh '$windowsSshPath' '$gitRepoUri' '$NatNetwork' '$NatIpAddress' "
+    Write-Output "4/6 Install Ansible"
+    wsl -d $WslDistribution -u $WslUsername bash -ic "./infra/scripts/3-install-ansible-solution.sh '$windowsSshPath' '$gitRepoUri' '$NatNetwork' '$NatIpAddress' "
 
-Write-Output "Install Ansible solution"
-wsl -d $WslDistribution -u $WslUsername bash -c "./infra/scripts/4-run-ansible-solution.sh"
+    Write-Output "5/6 Install Ansible solution"
+    wsl -d $WslDistribution -u $WslUsername bash -c "./infra/scripts/4-run-ansible-solution.sh"
 
-Write-Output "Ensure WSL Distro is restarted when first used with user account"
-wsl -t $WslDistribution
+    Write-Output "6/6 Ensure WSL Distro is restarted when first used with user account"
+    wsl -t $WslDistribution
+}
+catch {
+    Write-Error "An error occurred: $_"
+    exit 1
+}

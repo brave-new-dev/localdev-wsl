@@ -32,7 +32,8 @@ fi
 
 if [ ! -d "$HOME/.local/bin/py312" ]; then
   echo "Directory $HOME/.local/bin/py312 does not exist. Initializing py312..."
-  sudo $HOME/.local/bin/uv init py312
+  cd $HOME/.local/bin
+  uv init py312
 fi
 cd $HOME/.local/bin/py312
 
