@@ -131,13 +131,34 @@ Enable-WindowsFeature -FeatureName VirtualMachinePlatform
 
 
 try {
-    # Write-Output "1/6 Setting up WSL distribution: $WslDistribution"
-    # Install-WSL -DistroName $WslDistribution
+    Write-Output "1/6 Setting up WSL distribution: $WslDistribution"
+    Install-WSL -DistroName $WslDistribution
 
-    # Write-Output "2/6 Create $WslUsername and add it to sudoers"
-    # wsl -d $WslDistribution -u root bash -ic "./infra/scripts/1-create-user.sh '$WslUsername'"
-    # wsl --shutdown
+}
+catch {
+    Write-Error "An error occurred: $_"
+    exit 1
+}
+finally {
+    Write-Output "WSL distribution setup completed."
+}
+try{
 
+    Write-Output "2/6 Create $WslUsername and add it to sudoers"
+    wsl -d $WslDistribution -u root bash -ic "./infra/scripts/1-create-user.sh '$WslUsername'"
+    wsl --shutdown
+
+}
+catch {
+    Write-Error "An error occurred: $_"
+    exit 1
+}
+finally {
+    Write-Output "User setup completed."
+}
+
+try{
+    
     Write-Output "3/6 Update the system"
     wsl -d $WslDistribution -u $WslUsername bash -c "./infra/scripts/2-install-ansible.sh"
 
@@ -153,4 +174,4 @@ try {
 catch {
     Write-Error "An error occurred: $_"
     exit 1
-}
+}   
